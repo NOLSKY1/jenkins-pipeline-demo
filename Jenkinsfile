@@ -5,21 +5,22 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/NOLSKY1/jenkins-pipeline-demo.git',
-                credentialsId: 'github-cred'
+                echo "Code is already checked out by Jenkins SCM"
             }
         }
 
-        stage('Sonar Test') {
-            steps {
-                sh '''
-                echo "Running Sonar test..."
-                mvn sonar:sonar \
-                -Dsonar.projectKey=test-project \
-                -Dsonar.host.url=http://localhost:9000 \
-                -Dsonar.login=wrong-token
-                '''
-            }
+        stage('SonarQube Analysis') {
+    steps {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            sh """
+            mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=ajava-maven-project \
+            -Dsonar.projectName=ajava-maven-project \
+            -Dsonar.host.url=http://13.69.247.235:9000 \
+            -Dsonar.token=${SONAR_TOKEN}
+            """
         }
+    }
+}
     }
 }
