@@ -5,13 +5,20 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Code is already checked out by Jenkins SCM"
+                git url: 'https://github.com/NOLSKY1/jenkins-pipeline-demo.git',
+                credentialsId: 'github-cred'
             }
         }
 
-        stage('Test') {
+        stage('Sonar Test') {
             steps {
-                sh 'echo Hello Jenkins is working'
+                sh '''
+                echo "Running Sonar test..."
+                mvn sonar:sonar \
+                -Dsonar.projectKey=test-project \
+                -Dsonar.host.url=http://localhost:9000 \
+                -Dsonar.login=wrong-token
+                '''
             }
         }
     }
