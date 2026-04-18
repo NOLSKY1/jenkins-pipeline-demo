@@ -13,20 +13,18 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                        mvn clean verify sonar:sonar \
-                          -Dsonar.projectKey=java-maven \
-                          -Dsonar.projectName=java-maven \
-                          -Dsonar.host.url=$SONAR_HOST_URL \
-                          -Dsonar.token=$SONAR_TOKEN
-                        '''
-                    }
-                }
-            }
+     stage('SonarQube Analysis') {
+    steps {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            sh '''
+            mvn clean verify sonar:sonar \
+              -Dsonar.projectKey=java-maven \
+              -Dsonar.projectName=java-maven \
+              -Dsonar.host.url=http://192.168.146.132:9000 \
+              -Dsonar.login=$SONAR_TOKEN
+            '''
+        }
+    }}
         }
 
         stage("Quality Gate") {
