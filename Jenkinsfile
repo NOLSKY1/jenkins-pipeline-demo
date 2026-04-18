@@ -1,24 +1,38 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven3'   // make sure Maven is configured in Jenkins
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
-                echo "Code is already checked out by Jenkins SCM"
+                checkout scm
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    sh """
-                    mvn clean verify sonar:sonar \
-                      -Dsonar.projectKey=java-maven \
-                      -Dsonar.projectName='java-maven' \
-                      -Dsonar.host.url=http://localhost:9000 \
-                      -Dsonar.token=$SONAR_TOKEN
-                    """
+                withSonarQubeEnv('SonarQube') {
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                        mvn clean verify sonar:sonar \
+                          -Dsonar.projectKey=java-maven \
+                          -Dsonar.projectName=java-maven \
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.token=$SONAR_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
